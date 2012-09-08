@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Pseudo-elements with jQuery (plugin)</title>
+        <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js'></script>
+        <script src='pseudo.jquery.js'></script>
+        
+        <style>
+            body { 
+              font-family: sans-serif;
+              max-width: 800px;
+              margin: 1em auto;
+            }
+            h1 { text-align: center; }
+            #before-and-after {
+                width: 200px;
+                height: 200px;
+                border: 1px solid #bbb;
+                margin: 0 auto;
+            }
+            #before-and-after:before {
+                content: "Before";
+                background-color: red;
+                color: #fff;
+            }
+            #before-and-after:after {
+                content: "After";
+                background-color: green;
+                width: 20px;
+                color: #fff;
+            }
+            button { 
+              display: block;
+              margin: 0 auto;
+            }
+        </style>
+        
+        <script>
+        
+           
+        
+        function randomColor() {
+            var cols = ['blue', 'yellow', 'orange', 'red', 'gray'];
+            return cols[Math.floor(Math.random()*cols.length)];
+        }
+        
+        $(document).ready(function() {
+        
+            // You can override options like this, although you generally won't
+            // need to
+            $('#before-and-after').pseudoCssOptions({
+              ':before' : {
+                // this can also be a function with 'this' set as the 
+                // current element, e.g.
+                // function() { return 'html body ' + $(this).attr('id')); }
+                selector: 'html body #before-and-after',
+                useImportant: false
+             }
+           });
+           
+           
+           $('#before-and-after button.random').click(function() {
+              
+                $('#before-and-after')
+                    .pseudoCss(':before', 'background-color', randomColor())
+                    .pseudoCss(':before', 'border', '5px solid ' + randomColor())
+                ;
+                
+                // you can also use map {property: value} syntax with
+                // camel cased properties to set multiple properties at once
+                $('#before-and-after').pseudoCss(':after', {
+                    backgroundColor : randomColor(),
+                    border: '5px solid ' + randomColor()
+                });
+            });
+            
+            
+            
+            $('#before-and-after button.reset').click(function() {            
+                // send through a falsy value (false, null, '') to remove a rule
+                var map = {
+                  backgroundColor: false,
+                  border: false
+                };
+                $('#before-and-after').pseudoCss(':before', map);
+                $('#before-and-after').pseudoCss(':after', map);
+            });
+        
+        });
+        </script>
+    </head>
+    
+    <body>
+    
+        <h1>Pseudo-elements with jQuery</h1>
+        
+        <h2> Intro </h2>
+        <p>Manipulating pseudo-elements via JavaScript isn't easy. 
+          As pseudo-elements are not really *in* the DOM, but only exist in CSS,
+          it's not possible to <em>target</em> them via the usual methods.
+          However, it is possible to manipulate raw CSS, and this provides
+          a 'good-enough' workaround for a lot of cases. And this can be
+          encapsulated within a jQuery plugin.
+        <h2> Download/code/etc </h2>
+        <p> Code is on <a href='https://github.com/markwatkinson/jquery-pseudo-css'>GitHub</a>. Forks/patches, etc welcome.
+        <h2> Demo </h2>
+        <div id='before-and-after'>
+            <button class='random'>Change colours</button>
+            <button class='reset'>Reset</button>
+        </div>
+        
+        <h2> Caveats and stuff </h2>
+        <p> 
+          This definitely doesn't work under IE8 and below. The stylesheet interface it exposes is
+          different, and I think it errors on pseudo elements anyway. I haven't investigated much.
+          IE9 supposedly implements the right interface (and this lib uses duck typing so if it's there
+          we'll use it), but I haven't tested it.
+        <p> The underlying method is <em>fundamentally</em> different to how jQuery is able to 
+          provide its $.css() function. Under the hood, we aren't setting inline CSS like $.css() 
+          does, and we cannot look up computed CSS either (there's just no interface to do so). 
+          As a result, the library is incapable of telling
+          you what CSS is *really* applied to a pseudo-element. We could guess, but we'd sometimes be wrong,
+          so we don't do it. <strong>TL;DR</strong>:  $.pseudoCss(':after', 'background-color') won't
+          return the background color.
+        <p>Finally, in addition to the previous point, as we are writing raw CSS and injecting it into
+          a stylesheet, it may be that sometimes the auto-generated selector isn't specific enough to
+          override a pre-existing one. In this case, check out the options function which allows you
+          to override the selector on an element
+          
+        <h2>API</h2>
+        <p>The API exposes $.pseudoCss() and $.pseudoCssOptions(). The API works around the idea that
+        a jQuery object will need an additional property, pseudoElement, to identify which element to
+        target. pseudoElement should be a string transcibed as in CSS, e.g ':before' or '::before'. 
+        Don't omit the ':'.
+        
+        <h3>$.pseudoCss</h3>
+        <ul>
+            <li>
+                <code>$.pseudoCss(string pseudoElement, string property, string value)</code>
+            </li>
+            <li>
+                <code>$.pseudoCss(string pseudoElement, map properties)</code>
+            </li>
+        </ul>
+       
+        <p>To unset a previously set value, assign it to a 'falsy' value (e.g. null, false, the 
+        empty string, etc).
+        
+        <h4>Examples</h4>
+        <pre>
+$('#element')
+    .pseudoCss(':before', 'background-color', 'red')
+    .pseudoCss(':before', 'border-color', 'blue')
+;
+
+// you can also use map {property: value} syntax with
+// camel cased properties to set multiple properties at once
+$('#element')
+      .pseudoCss(
+          ':before', {
+              backgroundColor : 'red',
+              borderColor: 'blue'
+      });
+      
+// unset the background color
+$('#element').pseudoCss(':before', 'background-color', null);
+</pre>
+         
+         <h3>$.pseudoCssOptions</h3>
+         <ul><li><code>$.pseudoCssOptions(options)</code></li></ul>
+         
+         <p>The options object is a nested map which looks like this:
+         <pre>
+{
+    pseudoElement: {
+        selector: (function or string)
+        useImportant: (bool)
+    }
+}
+</pre>
+      <p><code>selector</code> may be set to override the selector generated for that element.
+      <p><code>useImportant</code> may be set to force or prevent !important being appended to generated rules
+    </body>
+</html>
