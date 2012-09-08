@@ -178,7 +178,8 @@ $('#element').pseudoCss(':before', 'background-color', null);
     }
 }
 </pre>
-      <p><code>selector</code> may be set to override the selector generated for that element.
+      <p><code>selector</code> may be set to override the selector generated for that element. If a function is given,
+          <code>this</code> will be set as the element.
       <p><code>useImportant</code> may be set to force or prevent !important being appended to generated rules
     </body>
 </html>
