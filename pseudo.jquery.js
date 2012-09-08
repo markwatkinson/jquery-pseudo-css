@@ -139,7 +139,6 @@
                 ruleBody += ';';
             }
         });
-        ruleBody += '}';
         
         if (styleSheet.insertRule) {
             // we can't have a sparse array so fill up any discrepancy with
