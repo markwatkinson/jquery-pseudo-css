@@ -39,7 +39,9 @@
             return stringOrFunc.call(context);
         }
         else {
-            // error
+            // technically this is an error but cast whatever it is
+            // to a string so it might still work.
+            return '' + stringOrFunc;
         }
     }
 
