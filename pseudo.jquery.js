@@ -93,7 +93,7 @@
         var data = getData($element);
         if (data.setup) { return; }
         if (!$element.attr('id')) {
-            $element.id('pseudoCssId' + uidCounter);
+            $element.attr('id','pseudoCssId' + uidCounter);
         }        
         data.setup = true;
         data.css = {};
