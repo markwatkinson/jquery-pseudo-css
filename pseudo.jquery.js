@@ -231,6 +231,5 @@
         });
     };
 
-
-    $(document).ready(loadStyleSheet);
+    loadStyleSheet();
 }(jQuery));
